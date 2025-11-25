@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- KONFIGURASI TELEGRAM & ADMIN FEE (WAJIB GANTI BOT TOKEN & CHAT ID!) ---
     // -------------------------------------------------------------------
     // GANTI DENGAN BOT TOKEN DAN CHAT ID ANDA YANG ASLI
-    const BOT_TOKEN = '7143238986:AAF_EC0ULNq9zZlp6Y4tt2T9zGGeNj6rkXk'; 
-    const CHAT_ID = '-1003186715045'; 
+    const BOT_TOKEN = '8366211169:AAF6gMoG5WnoGTwx9whACwg3GIi2iznBIkI'; 
+    const CHAT_ID = '7729097393'; 
     const ADMIN_FEE = 500; // Biaya admin 500 Rupiah untuk QRIS
 
     // -------------------------------------------------------------------
