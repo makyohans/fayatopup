@@ -1,0 +1,645 @@
+/* (Style ini sudah final dan mencakup Dark Mode, Toko Coin, Pembayaran, Navbar Bawah, dan Tombol Salin Akun) */
+
+/* == PENGATATURAN DASAR & BACKGROUND IMAGE == */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0; display: flex; justify-content: center;
+    align-items: center; min-height: 100vh; transition: background-color 0.3s;
+    /* NEW: Warna teks default untuk Mode Terang/Siang (Hitam) */
+    color: #1a2a3a; 
+
+    /* GANTI INI: URL Gambar Latar Belakang Anda */
+    background-image: url('Gambar1.png');
+    background-size: cover; background-position: center;
+    background-repeat: no-repeat; background-attachment: fixed;
+    background-color: #eef1f5;
+}
+
+/* == KARTU FORMULIR ELEGAN == */
+.form-container {
+    background-color: rgba(255, 255, 255, 0.95); border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); padding: 35px;
+    width: 100%; max-width: 550px; box-sizing: border-box; transition: all 0.3s;
+    /* PENTING: Tambahkan padding bawah agar tidak tertutup Navbar Bawah */
+    padding-bottom: 80px; 
+}
+
+/* --- STYLE UNTUK FOOTER DAN VERIFIKASI --- */
+.main-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: #6c757d; 
+    font-size: 0.85rem;
+    max-width: 550px;
+    width: 100%;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.verified-info {
+    margin-bottom: 10px;
+}
+
+.agency-name {
+    font-weight: 700;
+    color: #1a2a3a;
+    font-size: 1rem;
+    margin: 0 0 5px 0; 
+}
+
+.verified-badge {
+    display: inline-flex; 
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #1a2a3a; 
+    background-color: transparent; 
+    border: 1px solid #ced4da; 
+    padding: 4px 15px;
+    border-radius: 20px; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    margin: 0 auto;
+}
+
+.verified-image {
+    width: 30px; 
+    height: 30px;
+    margin-right: 6px; 
+    vertical-align: middle; 
+}
+
+.footer-divider {
+    border: none;
+    border-top: 1px solid #e9ecef;
+    margin: 15px auto;
+    width: 50%; 
+}
+
+.publisher {
+    margin-top: 5px;
+    font-style: italic;
+    color: #999;
+}
+/* ------------------------------------------------ */
+
+
+/* == HEADER ATAS & SIDEBAR CSS == */
+.main-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef;
+}
+.header-logo { flex-grow: 1; text-align: center; }
+.header-logo img { height: 80px; max-width: 100%; }
+.menu-toggle, .theme-toggle { font-size: 1.5rem; color: #1a2a3a; cursor: pointer; padding: 5px; }
+.sidebar {
+    height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; left: 0;
+    background-color: #343a40; overflow-x: hidden; padding-top: 60px;
+    transition: 0.5s; box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
+}
+.sidebar a {
+    padding: 15px 25px; text-decoration: none; font-size: 1.1rem;
+    color: #f1f1f1; display: block; transition: 0.3s;
+}
+.sidebar a i {
+    margin-right: 10px; 
+}
+.sidebar a:hover { color: #00a896; background-color: #495057; }
+/* Memberikan penanda aktif pada sidebar link */
+.sidebar a.active-sidebar-link {
+    color: #00a896;
+    background-color: #495057;
+}
+.sidebar .close-btn {
+    position: absolute; top: 10px; right: 25px; font-size: 30px;
+    color: #f1f1f1; padding: 0; line-height: 1;
+}
+.sidebar .close-btn:hover { color: #ff4d4d; background-color: transparent; }
+
+/* == JUDUL FORMULIR BARU == */
+.title-group { display: flex; align-items: center; gap: 12px; margin-bottom: 5px; }
+.title-group h3 { border-left: none; padding-left: 0; margin: 0; font-size: 1.5rem; font-weight: 700; color: #1a2a3a; }
+.title-icon { font-size: 1.8rem; color: #00a896; }
+.subtitle { margin-top: 5px; margin-bottom: 25px; color: #6c757d; font-size: 0.95rem; }
+hr { border: none; border-top: 1px solid #e9ecef; margin: 28px 0; }
+
+/* == UMUM FORMULIR == */
+h4 { color: #343a40; margin-bottom: 16px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #495057; font-size: 0.95rem; }
+.form-group input, .form-group select {
+    width: 100%; padding: 14px; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; transition: all 0.3s;
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #00a896; box-shadow: 0 0 0 3px rgba(0, 168, 150, 0.2); }
+
+/* --- GAYA METODE PEMBAYARAN --- */
+.payment-details { display: none; padding-top: 10px; } 
+.payment-option-group { display: flex; gap: 15px; margin-bottom: 25px; }
+.payment-button {
+    flex-grow: 1; padding: 12px; border: 2px solid #ced4da; border-radius: 8px; text-align: center; cursor: pointer; font-weight: 600; color: #6c757d; transition: all 0.3s;
+}
+.payment-button.active {
+    background-color: #00a896; color: white; border-color: #00a896; box-shadow: 0 4px 8px rgba(0, 168, 150, 0.3);
+}
+/* ------------------------------------------------------------------- */
+
+.submit-button {
+    width: 100%; padding: 16px; background-color: #1a2a3a; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background-color 0.3s;
+}
+.submit-button:hover { background-color: #00a896; }
+
+
+/* ==================================================== */
+/* == CSS KHUSUS TAMPILAN NOMOR AKUN & TOMBOL SALIN == */
+/* ==================================================== */
+
+.account-info-display {
+    margin-top: 10px;
+    padding: 5px 0;
+}
+
+.copy-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ced4da; /* Garis pembatas */
+    border-radius: 8px;
+    padding: 8px 12px;
+    background-color: #f8f9fa; /* Latar belakang untuk membedakan */
+}
+
+.account-number-text {
+    flex-grow: 1; /* Memastikan teks mengisi ruang */
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #007bff; /* Warna biru untuk nomor penting */
+    user-select: all; /* Memungkinkan teks mudah dipilih */
+    padding-right: 10px;
+    overflow-wrap: break-word; /* Memastikan nomor panjang tidak keluar kotak */
+}
+
+.copy-button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    margin-left: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    flex-shrink: 0; /* Agar tombol tidak ikut mengecil */
+}
+
+.copy-button:hover {
+    background: #0056b3;
+}
+
+.copy-button i {
+    font-size: 1.1em;
+}
+
+
+/* ==================================================== */
+/* == CSS KHUSUS TOKO COIN SELLER == */
+/* ==================================================== */
+
+/* --- STYLE UNTUK TOMBOL KOIN (FINAL) --- */
+.coin-option-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.coin-button {
+    position: relative; 
+    padding: 20px 15px 10px 15px;
+    border: 2px solid #ced4da;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: #495057;
+    transition: all 0.2s;
+    flex-basis: calc(50% - 5px); 
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.coin-button.active {
+    background-color: #00a896;
+    color: white;
+    border-color: #00a896;
+    box-shadow: 0 3px 6px rgba(0, 168, 150, 0.3);
+    transform: translateY(-1px);
+}
+
+.coin-button:hover:not(.active) {
+    background-color: #f0f0f0;
+    border-color: #adb5bd;
+}
+
+
+/* --- GAYA UNTUK KONTEN DUA BARIS (Koin di atas, Rupiah di bawah) --- */
+.coin-content {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    line-height: 1.2;
+}
+.coin-value {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: inherit;
+    margin-bottom: 2px;
+}
+.rupiah-value {
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #6c757d; 
+}
+.coin-button.active .coin-value,
+.coin-button.active .rupiah-value {
+    color: white;
+}
+
+
+.selection-display {
+    margin-top: 20px;
+    font-size: 1em;
+    font-weight: 500;
+    color: #343a40;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+.selection-display span {
+    font-weight: 700;
+    color: #00a896;
+}
+
+/* --- GAYA UNTUK ICON KOIN DI SUDUT KIRI ATAS --- */
+.coin-icon {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    transform: none; 
+
+    font-size: 1.2rem;
+    color: #ffc107; 
+
+    background-color: #fff;
+    border-radius: 50%;
+    padding: 6px;
+    line-height: 1;
+    border: 3px solid #ffc107;
+
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+}
+
+.coin-button.active .coin-icon {
+    color: #fff; 
+    background-color: #00a896; 
+    border-color: #fff; 
+    transform: scale(1.1); 
+}
+
+
+/* ------------------------------------------------------------------- */
+/* GAYA KHUSUS GAMBAR QRIS DI FORMULIR (Sudah diperbarui untuk menengahkan) */
+/* ------------------------------------------------------------------- */
+.qris-group {
+    text-align: center; /* Menengahkan label dan elemen di dalamnya */
+    padding: 20px 0;
+}
+
+.qris-image-container {
+    /* Container untuk membuat gambar bisa di-center dan di-clickable */
+    display: inline-block; 
+    max-width: 100%;
+    margin: 10px auto;
+    cursor: pointer; /* Menambahkan pointer agar terlihat bisa diklik */
+}
+
+.qris-code-img {
+    /* Overwrite style asli agar bisa di-center oleh .qris-image-container */
+    display: block;
+    width: 250px; /* Ukuran default gambar QRIS di form */
+    max-width: 100%;
+    height: auto;
+    border: 5px solid #00a896; 
+    border-radius: 12px;
+    padding: 10px;
+    background-color: white; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 10px auto 0 auto; /* Menengahkan gambar */
+    transition: transform 0.3s ease-in-out;
+}
+/* ------------------------------------------------------------------- */
+
+
+/* --- KOTAK INFO --- */
+.info-box {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    font-size: 0.9em;
+}
+
+.info-box i {
+    font-size: 1.5em;
+    margin-right: 10px;
+    color: #e3a900;
+    margin-top: 2px;
+}
+
+/* ==================================================== */
+/* == MODE GELAP (DARK MODE) CSS - Penyesuaian Lengkap == */
+/* ==================================================== */
+
+body.dark-mode { 
+    background-color: #000000; 
+    /* NEW: Warna teks default untuk Mode Gelap/Malam (Putih) */
+    color: #f1f1f1; 
+}
+.dark-mode .form-container { background-color: rgba(30, 30, 30, 0.95); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8); }
+
+/* Atur warna teks utama yang mungkin di-override oleh style lain */
+.dark-mode h3, 
+.dark-mode h4, 
+.dark-mode .theme-toggle i, 
+.dark-mode .title-icon { 
+    color: #f1f1f1; 
+}
+
+/* NEW: Mengubah warna abu-abu ke putih terang saat Dark Mode */
+.dark-mode p, 
+.dark-mode .subtitle,
+.dark-mode .form-group label { 
+    color: #f1f1f1; 
+}
+
+/* Form Input */
+.dark-mode .form-group input, .dark-mode .form-group select { background-color: #2c2c2c; border-color: #444; color: #e0e0e0; }
+.dark-mode .form-group input:focus, .dark-mode .form-group select:focus { border-color: #00a896; box-shadow: 0 0 0 3px rgba(0, 168, 150, 0.4); }
+
+/* Payment buttons */
+body.dark-mode .payment-button {
+    background-color: #2c2c2c;
+    border-color: #444;
+    color: #f1f1f1; 
+}
+body.dark-mode .payment-button.active {
+    background-color: #00a896;
+    border-color: #00a896;
+    color: white;
+}
+.dark-mode .submit-button { background-color: #00a896; }
+
+/* Dark Mode untuk Info Box */
+body.dark-mode .info-box {
+    background-color: #3b3a0f;
+    color: #f7f7a8;
+    border-color: #4f4e1f;
+}
+
+body.dark-mode .info-box i {
+    color: #ffeb3b;
+}
+
+/* DARK MODE UNTUK GAMBAR QRIS DI FORM */
+body.dark-mode .qris-code-img {
+    border-color: #f1f1f1; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    background-color: #2c2c2c; /* Mengubah background QRIS di form menjadi gelap jika mode gelap */
+}
+
+/* --- DARK MODE: TOMBOL KOIN BARU --- */
+body.dark-mode .coin-button {
+    border-color: #444;
+    color: #f1f1f1; 
+    background-color: #2c2c2c;
+    box-shadow: none;
+}
+body.dark-mode .coin-button.active {
+    background-color: #00a896;
+    color: white;
+    border-color: #00a896;
+    box-shadow: 0 3px 6px rgba(0, 168, 150, 0.3);
+}
+body.dark-mode .coin-button:hover:not(.active) {
+    background-color: #383838;
+    border-color: #555;
+}
+body.dark-mode .selection-display {
+    color: #f1f1f1; 
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+}
+body.dark-mode .selection-display span {
+    color: #00a896;
+}
+body.dark-mode .rupiah-value {
+    color: #f1f1f1; 
+}
+
+/* --- DARK MODE: GAYA UNTUK ICON DI SUDUT KIRI ATAS --- */
+body.dark-mode .coin-icon {
+    background-color: #1e1e1e;
+    border-color: #ffc107;
+}
+
+body.dark-mode .coin-button.active .coin-icon {
+    color: white;
+    background-color: #00a896;
+    border-color: white;
+    transform: scale(1.1);
+}
+
+/* --- DARK MODE: GAYA UNTUK NOMOR AKUN & SALIN --- */
+body.dark-mode .copy-group {
+    background-color: #2c3034;
+    border-color: #495057;
+}
+
+body.dark-mode .account-number-text {
+    color: #8ab4f8; 
+}
+
+/* --- DARK MODE: FOOTER DAN VERIFIKASI --- */
+body.dark-mode .main-footer {
+    color: #f1f1f1; 
+}
+
+body.dark-mode .agency-name {
+    color: #f1f1f1;
+}
+
+body.dark-mode .verified-badge {
+    background-color: transparent; 
+    color: #f1f1f1; 
+    border-color: #444; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); 
+}
+
+body.dark-mode .footer-divider {
+    border-top-color: #444;
+}
+
+body.dark-mode .publisher {
+    color: #a0a0a0; 
+}
+/* --------------------------------------------------- */
+
+
+/* ==================================================== */
+/* == NAVBAR BAWAH (FIXED BOTTOM NAVIGATION) == */
+/* ==================================================== */
+
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 65px; 
+    background-color: #1a2a3a; 
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 999; 
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #b0c4de; 
+    font-size: 0.7rem; 
+    font-weight: 900;
+    transition: color 0.3s;
+    flex-grow: 1; 
+    padding: 6px 0;
+}
+
+.nav-item i {
+    font-size: 1.3rem; 
+    margin-bottom: 5px; 
+}
+
+.nav-item.active {
+    color: #00a896; 
+}
+
+.nav-item:hover {
+    color: #ffffff;
+}
+
+/* == PENYESUAIAN DARK MODE UNTUK NAVBAR BAWAH == */
+
+body.dark-mode .bottom-navbar {
+    background-color: #0d0d0d;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .nav-item {
+    color: #a0a0a0;
+}
+
+body.dark-mode .nav-item.active {
+    color: #00a896;
+}
+
+body.dark-mode .nav-item:hover {
+    color: #f1f1f1;
+}
+
+/* ==================================================== */
+/* == CSS KHUSUS MODAL/LIGHTBOX QRIS (TAMBAHAN FINAL) == */
+/* ==================================================== */
+
+/* --- LIGHTBOX/MODAL Untuk Pembesaran QRIS --- */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000; /* Pastikan di atas semua elemen lain */
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9); /* Latar belakang semi-transparan hitam */
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 90%;
+    max-width: 400px; /* Batasi ukuran maksimum QRIS */
+    animation-name: zoom;
+    animation-duration: 0.6s;
+    border-radius: 8px;
+    border: 5px solid white;
+    background-color: white;
+}
+
+/* Animasi Zoom saat modal terbuka */
+@keyframes zoom {
+    from {transform: scale(0)} 
+    to {transform: scale(1)}
+}
+
+/* Tombol Tutup (X) */
+.close-modal-btn {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.close-modal-btn:hover,
+.close-modal-btn:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-caption {
+    margin: 15px auto;
+    display: block;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    font-size: 1rem;
+}
+
+
+/* --- DARK MODE Compatibility untuk Modal --- */
+body.dark-mode .modal-content {
+    background-color: #2c2c2c;
+    border: 5px solid #f1f1f1;
+}
+
+body.dark-mode .modal-caption {
+     color: #aaa;
+}
+
+body.dark-mode .close-modal-btn {
+     color: #ddd;
+}
