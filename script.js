@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const displayNomorEwallet = document.getElementById('displayNomorEwallet');
     const copyButtons = document.querySelectorAll('.copy-button');
 
-    // Bukti Pembayaran (LAMA - HANYA UNTUK REFERENSI ID)
+    // Bukti Pembayaran
     const buktiPembayaranFile = document.getElementById('buktiPembayaranFile');
     
-    // Bukti Pembayaran (BARU - Toggle)
+    // Bukti Pembayaran (Toggle)
     const btnProofId = document.getElementById('btnProofId');
     const btnProofFile = document.getElementById('btnProofFile');
     const sectionIdTransaksi = document.getElementById('sectionIdTransaksi');
@@ -321,10 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.display = "block";
                 modalImg.src = qrisImage.src; // Salin sumber gambar QRIS ke modal
             } else if (!radioQrisCasbon.checked) {
-                // Opsional: Beri tahu user untuk memilih metode QRIS
                  // alert('Silahkan pilih metode pembayaran QRIS terlebih dahulu.');
             } else if (!qrisImage.src || qrisImage.style.display !== 'block') {
-                 // Opsional: Beri tahu user untuk memilih jumlah koin
                  // alert('Silahkan pilih jumlah Koin terlebih dahulu.');
             }
         });
@@ -379,11 +377,11 @@ if (btnProofId && btnProofFile) {
 
 
 // -------------------------------------------------------------------
-// 7. FUNGSI KIRIM DATA KE TELEGRAM (SUDAH DIUPDATE)
+// 7. FUNGSI KIRIM DATA KE TELEGRAM (DIUPDATE UNTUK MENGIRIM FILE)
 // -------------------------------------------------------------------
 
     if (kirimCasbonButton) {
-        kirimCasbonButton.addEventListener('click', function(e) {
+        kirimCasbonButton.addEventListener('click', async function(e) {
             e.preventDefault(); 
 
             const data = new FormData(casbonForm);
@@ -395,7 +393,7 @@ if (btnProofId && btnProofFile) {
             const selectedRadio = document.querySelector('input[name="jenis_pembayaran"]:checked');
             const jenisPembayaran = selectedRadio ? selectedRadio.value : null;
 
-            // --- Validasi ---
+            // --- Validasi Dasar ---
             if (!namaFaya || !idFaya) {
                 alert('❌ Harap lengkapi Nama Faya dan ID Faya.');
                 return;
@@ -413,16 +411,17 @@ if (btnProofId && btnProofFile) {
                  return;
             }
             
-            // --- Validasi Bukti Pembayaran Baru ---
+            // --- Validasi Bukti Pembayaran ---
             let isProofProvided = false;
             let proofMode = 'Belum Dipilih';
             const sentIdTransaksi = idTransaksiInput ? idTransaksiInput.value.trim() : '-';
-            const fileName = buktiPembayaranFile.files[0] ? buktiPembayaranFile.files[0].name : "TIDAK ADA FILE";
+            const fileBukti = buktiPembayaranFile.files[0]; // Ambil file yang diunggah
+            const fileName = fileBukti ? fileBukti.name : "TIDAK ADA FILE";
 
             if (idTransaksiInput && idTransaksiInput.hasAttribute('required') && sentIdTransaksi !== '-') {
                 isProofProvided = true;
                 proofMode = 'ID Transaksi';
-            } else if (buktiPembayaranFile && buktiPembayaranFile.hasAttribute('required') && buktiPembayaranFile.files.length > 0) {
+            } else if (buktiPembayaranFile && buktiPembayaranFile.hasAttribute('required') && fileBukti) {
                 isProofProvided = true;
                 proofMode = 'Unggah Gambar';
             }
@@ -431,7 +430,12 @@ if (btnProofId && btnProofFile) {
                  alert('❌ Harap pilih dan lengkapi salah satu Bukti Pembayaran (ID Transaksi atau Unggah Gambar).');
                  return;
             }
-            // --- End Validasi Bukti Pembayaran Baru ---
+            
+            // Tambahan Validasi: Batas ukuran file (Max 10MB untuk Telegram API)
+            if (proofMode === 'Unggah Gambar' && fileBukti.size > 10 * 1024 * 1024) {
+                alert('❌ Ukuran file bukti pembayaran terlalu besar (Maksimal 10MB). Harap perkecil ukuran gambar.');
+                return;
+            }
 
 
             // --- DETAIL PEMBAYARAN SPESIFIK ---
@@ -443,78 +447,103 @@ if (btnProofId && btnProofFile) {
                 const bankValue = data.get('casbon_nama_bank');
                 if (!bankValue) { alert('❌ Harap pilih Bank Tujuan.'); return; }
                 const parts = bankValue.split('|'); 
-                
                 detailPembayaran = `Bank Transfer: ${parts[0].trim()}`;
                 nomorTujuan = parts[1].trim(); 
-                
             } else if (jenisPembayaran === 'ewallet') {
                 const ewalletValue = data.get('casbon_nama_ewallet');
                 if (!ewalletValue) { alert('❌ Harap pilih E-Wallet Tujuan.'); return; }
                 const parts = ewalletValue.split('|');
-                
                 detailPembayaran = `E-Wallet Transfer: ${parts[0].trim()}`;
                 nomorTujuan = parts[1].trim();
-                
             } else if (jenisPembayaran === 'qris') {
                 detailPembayaran = `QRIS (RAKUNSHOP.ID)`;
                 atasNamaPenerima = 'RAKUNSHOP.ID'; 
             }
 
-            // --- Pesan Telegram ---
+            // --- PESAN TELEGRAM (Teks/Caption) ---
             const baseRupiah = jenisPembayaran === 'qris' ? (parseInt(jumlahRupiah) - ADMIN_FEE) : parseInt(jumlahRupiah);
             const formattedCoin = Number(jumlahCoin).toLocaleString('id-ID');
             const formattedRupiahFinal = formatRupiah(jumlahRupiah);
             const formattedRupiahBase = formatRupiah(baseRupiah);
 
-            let message = "<b>🎉 KONFIRMASI ORDER COIN SELLER MASUK</b>\n\n";
-            message += "<b>--- DETAIL PEMBELI ---</b>\n";
-            message += "Nama Faya: " + namaFaya + "\n";
-            message += "ID Faya: " + idFaya + "\n\n";
+            let messageCaption = "<b>🎉 KONFIRMASI ORDER COIN SELLER MASUK</b>\n\n";
+            messageCaption += "<b>--- DETAIL PEMBELI ---</b>\n";
+            messageCaption += "Nama Faya: " + namaFaya + "\n";
+            messageCaption += "ID Faya: " + idFaya + "\n\n";
             
-            message += "<b>--- DETAIL ORDER ---</b>\n";
-            message += "Koin Dipesan: <b>" + formattedCoin + " Koin</b>\n";
-            message += "Harga Koin: " + formattedRupiahBase + "\n";
-            message += "Total Bayar: <b>" + formattedRupiahFinal + "</b>\n"; 
+            messageCaption += "<b>--- DETAIL ORDER ---</b>\n";
+            messageCaption += "Koin Dipesan: <b>" + formattedCoin + " Koin</b>\n";
+            messageCaption += "Harga Koin: " + formattedRupiahBase + "\n";
+            messageCaption += "Total Bayar: <b>" + formattedRupiahFinal + "</b>\n"; 
             
             if (jenisPembayaran === 'qris') {
-                message += `(Termasuk Biaya Admin: ${formatRupiah(ADMIN_FEE)})\n`;
+                messageCaption += `(Termasuk Biaya Admin: ${formatRupiah(ADMIN_FEE)})\n`;
             }
 
-            message += "\n<b>--- METODE PEMBAYARAN ---</b>\n";
-            message += "Metode: <b>" + jenisPembayaran.toUpperCase() + "</b>\n";
+            messageCaption += "\n<b>--- METODE PEMBAYARAN ---</b>\n";
+            messageCaption += "Metode: <b>" + jenisPembayaran.toUpperCase() + "</b>\n";
             
             if (jenisPembayaran !== 'qris') {
-                message += "Nomor Tujuan: <b>" + nomorTujuan + "</b>\n"; 
+                messageCaption += "Nomor Tujuan: <b>" + nomorTujuan + "</b>\n"; 
             }
             
-            message += "Penerima: <b>" + atasNamaPenerima + "</b>\n";
-            message += "Detail: " + detailPembayaran + "\n\n";
+            messageCaption += "Penerima: <b>" + atasNamaPenerima + "</b>\n";
+            messageCaption += "Detail: " + detailPembayaran + "\n\n";
             
-            // PESAN BUKTI PEMBAYARAN YANG SUDAH DIUPDATE
-            message += "<b>--- BUKTI PEMBAYARAN ---</b>\n";
-            message += "Mode Bukti: <b>" + proofMode + "</b>\n";
-            message += "ID Transaksi: <b>" + sentIdTransaksi + "</b>\n";
-            message += "Nama File Upload: <b>" + fileName + "</b>\n\n";
-            message += "⚠️ <b>PERHATIAN!</b> ⚠️\n";
-            message += "Harap cek secara manual file <b>BUKTI PEMBAYARAN</b> yang dikirimkan member melalui Telegram/WhatsApp.\n";
+            // Bagian Bukti Pembayaran
+            messageCaption += "<b>--- BUKTI PEMBAYARAN ---</b>\n";
+            messageCaption += "Mode Bukti: <b>" + proofMode + "</b>\n";
+            messageCaption += "ID Transaksi: <b>" + sentIdTransaksi + "</b>\n";
+            messageCaption += "Nama File Upload: <b>" + fileName + "</b>\n\n";
             
-            
+            if (proofMode !== 'Unggah Gambar') {
+                 messageCaption += "⚠️ <b>PERHATIAN!</b> ⚠️\n";
+                 messageCaption += "Konfirmasi dikirim TANPA file. Harap cek ID Transaksi secara manual.\n";
+            } else {
+                 messageCaption += "✅ **FILE BUKTI PEMBAYARAN DIKIRIM SEBAGAI FOTO.**\n";
+            }
+
+            // --- PENGIRIMAN DATA KE TELEGRAM ---
             kirimCasbonButton.disabled = true;
             kirimCasbonButton.textContent = 'MENGIRIM KONFIRMASI...'; 
+            
+            let telegramURL;
+            let fetchBody;
+            let headers = {};
 
-            const telegramURL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            fetch(telegramURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            if (proofMode === 'Unggah Gambar' && fileBukti) {
+                // MODE 1: KIRIM FOTO MENGGUNAKAN sendPhoto
+                telegramURL = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+                
+                // Buat FormData baru khusus untuk sendPhoto (menggunakan multipart/form-data)
+                const photoData = new FormData();
+                photoData.append('chat_id', CHAT_ID);
+                photoData.append('photo', fileBukti); // File gambar
+                photoData.append('caption', messageCaption); // Teks sebagai caption
+                photoData.append('parse_mode', 'HTML');
+                
+                fetchBody = photoData;
+                // Tidak perlu set Content-Type, browser akan set otomatis untuk FormData
+            } else {
+                // MODE 2: KIRIM PESAN TEXT BIASA (Jika mode ID Transaksi dipilih atau tidak ada file)
+                telegramURL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+                fetchBody = JSON.stringify({
                     chat_id: CHAT_ID,
-                    text: message,
+                    text: messageCaption,
                     parse_mode: 'HTML'
-                })
-            })
-            .then(response => {
+                });
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            try {
+                const response = await fetch(telegramURL, {
+                    method: 'POST',
+                    headers: headers,
+                    body: fetchBody
+                });
+
                 if (response.ok) {
-                    alert('✅ Konfirmasi Order Berhasil Di Kirim! Silahkan kirim file bukti pembayaran Anda ke kontak Admin (Telegram/WA) dan tunggu proses selanjutnya.'); 
+                    alert('✅ Konfirmasi Order Berhasil Di Kirim! Silahkan tunggu proses selanjutnya.'); 
                     
                     // Reset Form dan Tampilan
                     casbonForm.reset();
@@ -530,22 +559,24 @@ if (btnProofId && btnProofFile) {
                     displayNomorEwallet.textContent = 'Pilih E-Wallet';
                     
                     // Reset Proof Section
-                    toggleProofSection(null); // Panggil untuk mereset tampilan
+                    toggleProofSection(null);
                     
                 } else {
-                    response.json().then(data => {
-                        console.error('Telegram API Error:', data);
-                        alert(`❌ Gagal mengirim Konfirmasi Order. Error: ${data.description}`);
-                    });
+                    const data = await response.json();
+                    console.error('Telegram API Error:', data);
+                    
+                    let errorMessage = `❌ Gagal mengirim Konfirmasi Order. Error: ${data.description}`;
+                    if (proofMode === 'Unggah Gambar') {
+                         errorMessage += "\n\nPastikan file gambar valid, tidak corrupt, dan ukuran maksimal 10MB.";
+                    }
+                    alert(errorMessage);
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 alert('❌ Terjadi kesalahan jaringan saat mengirim Konfirmasi Order: ' + error.message);
-            })
-            .finally(() => {
+            } finally {
                 kirimCasbonButton.disabled = false;
                 kirimCasbonButton.textContent = 'KONFIRMASI PEMBAYARAN & ORDER'; 
-            });
+            }
         });
     }
 
