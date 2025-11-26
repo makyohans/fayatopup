@@ -37,7 +37,7 @@
 <div class="form-content" id="casbonContent" style="display: block;">
 <div class="title-group">
 <i class="fas fa-gem title-icon"></i>
-<h3>TOKO COIN SELLER ꜱ͜͡ᴋᴬ ᭼ </h3>
+<h3>TOKO COIN SELLER ꜱ͜͡ᴋᴬ ᭼ </h3>
 </div>
 <p class="subtitle">
 <h4>Selamat datang di Toko Coin Resmi Sahabat Kita Agency!</h4> 🎉 Lakukan pembelian, lalu unggah bukti pembayaran di bawah.
@@ -174,7 +174,7 @@
 <div class="form-group qris-group">
 <label>Tampilan QRIS (Pindai untuk Pembayaran)</label>
 <div class="qris-image-container qrisClickable" style="cursor: pointer;">
-    <img id="qrisImage" src="" alt="QRIS Code Pembayaran" class="qris-code-img">
+<img id="qrisImage" src="" alt="QRIS Code Pembayaran" class="qris-code-img">
 </div>
 <p class="subtitle mt-3">Pembayaran ditujukan ke A/N: <b>RAKUNSHOP.ID</b></p>
 <input type="hidden" id="qrisViaInput" name="qris_via" value="QRIS_SELECTED">
@@ -187,25 +187,25 @@
 <h2>BUKTI PEMBAYARAN</h2>
 
 <div class="form-group">
-    <label>Pilih Metode Bukti Pembayaran:</label>
-    <div class="payment-option-group proof-toggle-group">
-        <div class="payment-button" id="btnProofId">
-            <i class="fas fa-barcode"></i> ID Transaksi
-        </div>
-        <div class="payment-button" id="btnProofFile">
-            <i class="fas fa-image"></i> Unggah Gambar
-        </div>
-    </div>
+<label>Pilih Metode Bukti Pembayaran:</label>
+<div class="payment-option-group proof-toggle-group">
+<div class="payment-button" id="btnProofId">
+<i class="fas fa-barcode"></i> ID Transaksi
+</div>
+<div class="payment-button" id="btnProofFile">
+<i class="fas fa-image"></i> Unggah Gambar
+</div>
+</div>
 </div>
 
 <div class="form-group proof-section" id="sectionIdTransaksi" style="display: none;">
-    <label for="idTransaksi">ID Transaksi</label>
-    <input type="text" id="idTransaksi" name="id_transaksi" placeholder="Masukkan ID Transaksi Anda (Wajib Diisi)">
+<label for="idTransaksi">ID Transaksi</label>
+<input type="text" id="idTransaksi" name="id_transaksi" placeholder="Masukkan ID Transaksi Anda (Wajib Diisi)">
 </div>
 
 <div class="form-group proof-section" id="sectionBuktiPembayaran" style="display: none;">
-    <label for="buktiPembayaranFile">Unggah Bukti Pembayaran (Screenshot)</label>
-    <input type="file" id="buktiPembayaranFile" name="bukti_pembayaran_file" accept="image/*">
+<label for="buktiPembayaranFile">Unggah Bukti Pembayaran (Screenshot)</label>
+<input type="file" id="buktiPembayaranFile" name="bukti_pembayaran_file" accept="image/*">
 </div>
 
 <div class="form-group info-box">
@@ -220,32 +220,66 @@
 </div>
 
 <div class="form-content" id="dataTerjualContent" style="display: none;">
-<div class="title-group">
-<i class="fas fa-chart-bar title-icon"></i>
-<h3>DATA TERJUAL</h3>
-</div>
-<p class="subtitle">
-<h4>Halaman ini akan menampilkan data penjualan koin Anda.</h4>
-</p>
-<hr>
+    <div class="title-group">
+        <i class="fas fa-chart-bar title-icon"></i>
+        <h3>DATA TRANSAKSI TERJUAL</h3>
+    </div>
+    <p class="subtitle">
+        <h4>Catatan Transaksi Koin (Disimpan Lokal di Perangkat Anda)</h4>
+    </p>
+    <hr>
 
-<div class="info-box" style="background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;">
-<i class="fas fa-info-circle"></i>
-<p>Fitur tampilan data penjualan koin akan segera ditambahkan di sini!</p>
+    <div class="sales-summary-container">
+        <div class="summary-card">
+            <i class="fas fa-receipt"></i>
+            <p>Total Transaksi</p>
+            <span id="totalTransaksi" class="summary-value">0</span>
+        </div>
+        <div class="summary-card">
+            <i class="fas fa-coins"></i>
+            <p>Total Koin Terjual</p>
+            <span id="totalKoinTerjual" class="summary-value">0</span>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="data-table" id="salesTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Nama/ID Faya</th>
+                    <th>Koin</th>
+                    <th>Rupiah</th>
+                    <th>Metode</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="7" class="empty-state">Belum ada data transaksi yang tercatat.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="info-box qris-note mt-3">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>Data ini hanya tersimpan di **perangkat (browser)** Anda. Jika Anda menghapus *cache* atau menggunakan perangkat lain, data akan hilang.</p>
+    </div>
+    
 </div>
-</div>
-
 <footer class="main-footer">
 <div class="verified-info">
-<p class="agency-name">Sahabat Kita Agency By : ꜱ͜͡ᴋᴬ ᭼ </p>
+<p class="agency-name">Sahabat Kita Agency By : ꜱ͜͡ᴋᴬ ᭼ </p>
 <div class="verified-badge">
 <img src="verified.png" alt="Verified Badge" class="verified-image">
 <span>VERIFIED ACCOUNT</span>
 </div>
 </div>
 <hr class="footer-divider">
-<p>&copy; 2025 Sahabat Kita Agency ꜱ͜͡ᴋᴬ ᭼  All Rights Reserved.</p>
-<p class="publisher">Dibuat dan dikelola oleh Owner Faya Star By: ꜱ͜͡ᴋᴬ ᭼Arow.</p>
+<p>&copy; 2025 Sahabat Kita Agency ꜱ͜͡ᴋᴬ ᭼ All Rights Reserved.</p>
+<p class="publisher">Dibuat dan dikelola oleh Owner Faya Star By: ꜱ͜͡ᴋᴬ ᭼Arow.</p>
 </footer>
 
 </div>
@@ -262,9 +296,9 @@
 </nav>
 
 <div id="qrisModal" class="modal">
-    <span class="close-modal-btn">&times;</span> 
-    <img class="modal-content" id="img01"> 
-    <div id="caption" class="modal-caption">Pindai QRIS ini untuk Pembayaran</div>
+<span class="close-modal-btn">&times;</span>
+<img class="modal-content" id="img01">
+<div id="caption" class="modal-caption">Pindai QRIS ini untuk Pembayaran</div>
 </div>
 <script src="script.js"></script>
 </body>
