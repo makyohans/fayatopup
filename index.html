@@ -28,10 +28,13 @@
 <a href="#" id="closeSidebar" class="close-btn">&times;</a>
 
 <a href="#" id="casbonLink" class="active-sidebar-link"><i class="fas fa-gem"></i> Toko Produk Coin</a>
+<hr style="border-top: 1px solid #ffffff; margin: 3px;">
 <a href="#" id="terjualLink"><i class="fas fa-chart-bar"></i> Data Terjual</a>
 
-<hr style="border-top: 1px solid #495057; margin: 20px;">
+<hr style="border-top: 1px solid #ffffff; margin: 3px;">
 <a href="https://t.me/OwnerFayaStar" target="_blank"><i class="fab fa-telegram-plane"></i> Hubungi Admin</a>
+<hr style="border-top: 1px solid #ffffff; margin: 3px;">
+
 </div>
 
 <div class="form-content" id="casbonContent" style="display: block;">
@@ -63,39 +66,13 @@
 <h3>Pilih Jumlah Koin yang Akan Dibeli : </h3>
 </label>
 
-<div class="coin-option-group" id="coinOptionGroup">
-<div class="coin-button" data-coin="6100" data-rupiah="5000" data-qris-img="qris/qris_5k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">6.100 Koin</span><span class="rupiah-value">Rp 5.000</span></div></div>
-
-<div class="coin-button" data-coin="12350" data-rupiah="10000" data-qris-img="qris/qris_10k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">12.350 Koin</span><span class="rupiah-value">Rp 10.000</span></div></div>
-
-<div class="coin-button" data-coin="18500" data-rupiah="15000" data-qris-img="qris/qris_15k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">18.500 Koin</span><span class="rupiah-value">Rp 15.000</span></div></div>
-
-<div class="coin-button" data-coin="24700" data-rupiah="20000" data-qris-img="qris/qris_20k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">24.700 Koin</span><span class="rupiah-value">Rp 20.000</span></div></div>
-
-<div class="coin-button" data-coin="30800" data-rupiah="25000" data-qris-img="qris/qris_25k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">30.800 Koin</span><span class="rupiah-value">Rp 25.000</span></div></div>
-
-<div class="coin-button" data-coin="37050" data-rupiah="30000" data-qris-img="qris/qris_30k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">37.050 Koin</span><span class="rupiah-value">Rp 30.000</span></div></div>
-
-<div class="coin-button" data-coin="49400" data-rupiah="40000" data-qris-img="qris/qris_40k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">49.400 Koin</span><span class="rupiah-value">Rp 40.000</span></div></div>
-
-<div class="coin-button" data-coin="61750" data-rupiah="50000" data-qris-img="qris/qris_50k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">61.750 Koin</span><span class="rupiah-value">Rp 50.000</span></div></div>
-
-<div class="coin-button" data-coin="74100" data-rupiah="60000" data-qris-img="qris/qris_60k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">74.100 Koin</span><span class="rupiah-value">Rp 60.000</span></div></div>
-
-<div class="coin-button" data-coin="86450" data-rupiah="70000" data-qris-img="qris/qris_70k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">86.450 Koin</span><span class="rupiah-value">Rp 70.000</span></div></div>
-
-<div class="coin-button" data-coin="98800" data-rupiah="80000" data-qris-img="qris/qris_80k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">98.800 Koin</span><span class="rupiah-value">Rp 80.000</span></div></div>
-
-<div class="coin-button" data-coin="111150" data-rupiah="90000" data-qris-img="qris/qris_90k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">111.150 Koin</span><span class="rupiah-value">Rp 90.000</span></div></div>
-
-<div class="coin-button" data-coin="123500" data-rupiah="100000" data-qris-img="qris/qris_100k.png"><span class="coin-icon"><i class="fas fa-coins"></i></span><div class="coin-content"><span class="coin-value">123.500 Koin</span><span class="rupiah-value">Rp 100.000</span></div></div>
-
-
+<div class="coin-option-group" id="coinProductsContainer">
+    <div style="text-align: center; padding: 20px;">Memuat daftar koin...</div>
+</div>
 
 <input type="hidden" id="jumlahCoinInput" name="jumlah_coin" value="">
 <input type="hidden" id="jumlahRupiahInput" name="jumlah_rupiah" value="">
 <input type="hidden" id="selectedQrisImageName" name="selected_qris_image_name" value="">
-</div>
 
 <p class="selection-display">JUMLAH COIN YANG DIPILIH : <span id="selectedCoinDisplay">( Pilih Koin Untuk Melihat Total Harga )</span></p>
 </div>
@@ -121,12 +98,19 @@
 
 <div class="payment-details" id="detailBankCasbon">
 <div class="form-group">
-<label for="namaBankCasbon">Pilih Bank Tujuan</label>
+<label for="namaBankCasbon">PILIH BANK VIRTUAL / BANK PAY / BNB PAY</label>
 <select id="namaBankCasbon" name="casbon_nama_bank">
 <option value="">-- Pilih Bank --</option>
-<option value="BCA | 1234567890">BCA</option>
-<option value="Mandiri | 0987654321">Mandiri</option>
-<option value="BRI | 1122334455">BRI</option>
+<option value="BRI | 88810089646775883">NAV BRI</option>
+<option value="CIMB | 8059089646775883">NAV CIMB</option>
+<option value="BCA | 3901089646775883">NAV BCA</option>
+<option value="PERMATA | 8528089646775883">NAV PERMATA</option>
+<option value="BNI | 8810089646775883">NAV BNI</option>
+<option value="SEABANK | 901711939465">SEABANK</option>
+<option value="ALADIN | 50682991909">BANK ALADIN</option>
+<option value="JAGO | 102850087054">BANK JAGO U</option>
+<option value="JAGO | 102274397350">BANK JAGO S</option>
+
 </select>
 </div>
 
@@ -147,9 +131,9 @@
 <label for="namaEwalletCasbon">Pilih E-Wallet Tujuan</label>
 <select id="namaEwalletCasbon" name="casbon_nama_ewallet">
 <option value="">-- Pilih E-Wallet --</option>
-<option value="DANA | 081234567890">DANA</option>
-<option value="GOPAY | 089876543210">GOPAY</option>
-<option value="SHOPEEPAY | 081122334455">ShopeePay</option>
+<option value="DANA | 089646775883">DANA</option>
+<option value="GOPAY | 089646775883">GOPAY</option>
+<option value="SHOPEEPAY | 089646775883">SHOPEEPAY</option>
 </select>
 </div>
 
@@ -182,8 +166,6 @@
 </div>
 <hr>
 
-<hr>
-
 <h2>BUKTI PEMBAYARAN</h2>
 
 <div class="form-group">
@@ -207,7 +189,7 @@
 <label for="buktiPembayaranFile">Unggah Bukti Pembayaran (Screenshot)</label>
 <input type="file" id="buktiPembayaranFile" name="bukti_pembayaran_file" accept="image/*">
 </div>
-
+<hr>
 <div class="form-group info-box">
 <i class="fas fa-exclamation-circle"></i>
 <p>Pastikan **semua data** yang diisi sudah benar dan lengkap, termasuk **Bukti Pembayaran**.</p>
@@ -217,6 +199,7 @@
 
 <button type="button" id="kirimCasbonTelegram" class="submit-button">KONFIRMASI PEMBAYARAN & ORDER</button>
 </form>
+<hr>
 </div>
 
 <div class="form-content" id="dataTerjualContent" style="display: none;">
@@ -241,14 +224,14 @@
             <span id="totalKoinTerjual" class="summary-value">0</span>
         </div>
     </div>
-    
+           <hr style="border-top: 1px solid #ffffff; margin: 3px;">             
     <div class="table-responsive">
         <table class="data-table" id="salesTable">
             <thead>
                 <tr>
                     <th>No</th>
                     <th>Tanggal</th>
-                    <th>Nama/ID Faya</th>
+                    <th>Nama / ID Faya</th>
                     <th>Koin</th>
                     <th>Rupiah</th>
                     <th>Metode</th>
@@ -262,12 +245,12 @@
             </tbody>
         </table>
     </div>
-    
+            <hr style="border-top: 1px solid #ffffff; margin: 3px;">            
     <div class="info-box qris-note mt-3">
         <i class="fas fa-exclamation-circle"></i>
         <p>Data ini hanya tersimpan di **perangkat (browser)** Anda. Jika Anda menghapus *cache* atau menggunakan perangkat lain, data akan hilang.</p>
     </div>
-    
+           <hr style="border-top: 1px solid #ffffff; margin: 3px;">             
 </div>
 <footer class="main-footer">
 <div class="verified-info">

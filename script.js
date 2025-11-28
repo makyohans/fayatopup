@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // -------------------------------------------------------------------
-    // --- KONFIGURASI TELEGRAM & ADMIN FEE (WAJIB GANTI BOT TOKEN & CHAT ID!) ---
+    // --- KONFIGURASI ---
     // -------------------------------------------------------------------
-    // GANTI DENGAN BOT TOKEN DAN CHAT ID ANDA YANG ASLI
-    const BOT_TOKEN = '8366211169:AAF6gMoG5WnoGTwx9whACwg3GIi2iznBIkI';
-    const CHAT_ID = '7729097393';
     const ADMIN_FEE = 500; // Biaya admin 500 Rupiah untuk QRIS
+
+    // ⭐ KONFIGURASI TELEGRAM (DIPINDAHKAN DARI send_telegram.php) ⭐
+    // GANTI DENGAN BOT TOKEN DAN CHAT ID ANDA YANG ASLI
+    const BOT_TOKEN = '8366211169:AAF6gMoG5WnoGTwx9whACwg3GIi2iznBIkI'; 
+    const CHAT_ID = '7729097393'; 
+    const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+    // -------------------------------------------------------------------
 
     // -------------------------------------------------------------------
     // --- ELEMEN HTML (Disinkronkan dengan HTML Anda) ---
@@ -21,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const jumlahRupiahInput = document.getElementById('jumlahRupiahInput');
     const selectedCoinDisplay = document.querySelector('.selection-display span');
     const selectedQrisImageName = document.getElementById('selectedQrisImageName');
-
+    
     // Payment Details
     const btnBankCasbon = document.getElementById('btnBankCasbon');
     const btnEwalletCasbon = document.getElementById('btnEwalletCasbon');
@@ -62,6 +66,69 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataTerjualContent = document.getElementById('dataTerjualContent');
     const allSidebarLinks = document.querySelectorAll('.sidebar a');
     const allNavItems = document.querySelectorAll('.bottom-navbar .nav-item');
+    
+
+    // -------------------------------------------------------------------
+    // --- FUNGSI PEMUATAN PRODUK KOIN ---
+    // -------------------------------------------------------------------
+
+    function initializeCoinButtonListeners() {
+        const coinButtons = document.querySelectorAll('#coinProductsContainer .coin-button');
+
+        coinButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Hapus kelas 'selected' dari semua tombol
+                coinButtons.forEach(btn => btn.classList.remove('selected'));
+                this.classList.add('selected');
+
+                const coinAmount = this.getAttribute('data-coin');
+                const rupiahAmount = parseInt(this.getAttribute('data-rupiah'));
+                const qrisImgPath = this.getAttribute('data-qris-img');
+
+                const selectedRadio = document.querySelector('input[name="jenis_pembayaran"]:checked');
+                const isQrisSelected = selectedRadio && selectedRadio.value === 'qris';
+                
+                // Update display harga dan input
+                updateCoinDisplay(rupiahAmount, isQrisSelected);
+
+                // Perbarui input hidden
+                jumlahCoinInput.value = coinAmount;
+                selectedQrisImageName.value = qrisImgPath;
+
+                // Jika QRIS sedang dipilih, update gambarnya
+                if (isQrisSelected) {
+                    updateQrisImageFromSelection();
+                } else {
+                    if (qrisImage) qrisImage.style.display = 'none';
+                }
+
+                // Kosongkan detail pembayaran saat koin baru dipilih
+                document.querySelectorAll('.payment-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.payment-details').forEach(detail => detail.style.display = 'none');
+                
+                // Reset bukti pembayaran
+                toggleProofSection(null);
+            });
+        });
+    }
+
+    async function loadCoinProducts() {
+        const container = document.getElementById('coinProductsContainer');
+        if (!container) return;
+
+        try {
+            const response = await fetch('coin_products.html');
+            if (!response.ok) {
+                throw new Error(`Gagal memuat coin_products.html: ${response.statusText}`);
+            }
+            const htmlContent = await response.text();
+            container.innerHTML = htmlContent;
+            initializeCoinButtonListeners();
+        } catch (error) {
+            console.error("Error saat memuat produk koin:", error);
+            container.innerHTML = '<p style="color: red; text-align: center;">Gagal memuat produk koin.</p>';
+        }
+    }
 
 
     // -------------------------------------------------------------------
@@ -84,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         navigator.clipboard.writeText(textToCopy).then(() => {
             alert('✅ Nomor berhasil disalin: ' + textToCopy);
-            // Feedback visual: Ganti ikon sebentar
             const button = document.querySelector(`.copy-button[data-target="${textElementId}"]`);
             if (button) {
                 const icon = button.querySelector('i');
@@ -108,17 +174,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * LOGIKA QRIS BARU: Menggunakan IMG QRIS yang tersimpan di tombol koin
-     */
     function updateQrisImageFromSelection() {
         if (!qrisImage || !selectedQrisImageName || !selectedQrisImageName.value) {
-            // Sembunyikan jika tidak ada file QRIS yang dipilih
             if (qrisImage) qrisImage.style.display = 'none';
             return;
         }
-
-        // Ambil nama file QRIS dari input hidden
         qrisImage.src = selectedQrisImageName.value;
         qrisImage.style.display = 'block';
     }
@@ -128,43 +188,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // ⭐ 1.5. FUNGSI BARU: PERUBAHAN STATUS OTOMATIS (10 DETIK) ⭐
     // -------------------------------------------------------------------
 
-    /**
-     * Membuat ID Transaksi unik berbasis waktu.
-     * @returns {string} ID unik (misalnya: TRX-1678886400000).
-     */
     function generateTransactionId() {
         return 'TRX-' + Date.now();
     }
 
-    /**
-     * Memperbarui status transaksi di Local Storage dan memicu render ulang.
-     * @param {string} transactionId - ID unik transaksi.
-     * @param {string} newStatus - Status baru ('Diproses' atau 'Sukses').
-     */
     function updateTransactionStatus(transactionId, newStatus) {
         const salesData = getSalesData();
-        
-        // Cari transaksi berdasarkan ID
         const txIndex = salesData.findIndex(tx => tx.id === transactionId);
 
         if (txIndex !== -1) {
-            salesData[txIndex].status = newStatus; // Ubah status
-            saveSalesData(salesData); // Simpan kembali ke Local Storage
+            salesData[txIndex].status = newStatus;
+            saveSalesData(salesData);
             console.log(`[${transactionId}] Status diperbarui di LocalStorage menjadi: ${newStatus}`);
-            
-            // Panggil render ulang untuk memperbarui tampilan tabel
             renderSalesTable(); 
         }
     }
 
-    /**
-     * Memulai timer 10 detik untuk mengubah status transaksi dari 'Diproses' menjadi 'Sukses'.
-     * @param {string} transactionId - ID unik transaksi.
-     */
     function simulateProcessing(transactionId) {
         console.log(`[${transactionId}] Memulai timer 10 detik...`);
-
-        // Timer: Ubah status menjadi 'Sukses' setelah 10000 milidetik (10 detik)
         setTimeout(() => {
             updateTransactionStatus(transactionId, 'Sukses');
         }, 10000); 
@@ -181,11 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedValue = this.value;
 
             if (selectedValue) {
-                // MEMISAHKAN NILAI DENGAN PEMBATAS '|'
                 const parts = selectedValue.split('|');
-
                 if (parts.length === 2) {
-                    // parts[1] adalah Nomor Rekening/E-Wallet
                     displayElement.textContent = parts[1].trim();
                 } else {
                     displayElement.textContent = defaultText;
@@ -196,9 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Panggil fungsi untuk Bank dan E-Wallet
-    handleAccountSelection(namaBankCasbon, displayNomorBank, 'Pilih Bank');
-    handleAccountSelection(namaEwalletCasbon, displayNomorEwallet, 'Pilih E-Wallet');
+    if(namaBankCasbon) handleAccountSelection(namaBankCasbon, displayNomorBank, 'Pilih Bank');
+    if(namaEwalletCasbon) handleAccountSelection(namaEwalletCasbon, displayNomorEwallet, 'Pilih E-Wallet');
 
 
     // -------------------------------------------------------------------
@@ -216,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateCasbonPaymentDetails(selectedType) {
-        // Reset tampilan tombol dan detail
         [btnBankCasbon, btnEwalletCasbon, btnQrisCasbon].forEach(btn => btn.classList.remove('active'));
         [detailBankCasbon, detailEwalletCasbon, detailQrisCasbon].forEach(detail => {
             if (detail) detail.style.display = 'none';
@@ -225,15 +261,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let targetRadio, targetButton, targetDetail;
 
-        // Dapatkan nilai rupiah dari koin yang sedang aktif
-        let selectedRupiah = parseInt(document.querySelector('.coin-button.active')?.getAttribute('data-rupiah')) || 0;
+        const activeCoinButton = document.querySelector('.coin-button.selected');
+        let selectedRupiah = activeCoinButton ? parseInt(activeCoinButton.getAttribute('data-rupiah')) : 0;
 
         if (selectedRupiah === 0 && selectedType !== 'qris' && !radioQrisCasbon.checked) {
             alert('❌ Harap pilih jumlah Koin terlebih dahulu.');
             return;
         }
 
-        // Sembunyikan QRIS Image setiap kali berpindah mode (kecuali QRIS)
         if (qrisImage && selectedType !== 'qris') qrisImage.style.display = 'none';
 
 
@@ -244,13 +279,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if(document.getElementById('namaBankCasbon')) document.getElementById('namaBankCasbon').setAttribute('required', 'required');
 
-            // Inisialisasi tampilan nomor saat Bank dipilih
-            if (namaBankCasbon.value) {
+            if (namaBankCasbon && namaBankCasbon.value) {
                 const parts = namaBankCasbon.value.split('|');
                 if (parts.length === 2) {
                     displayNomorBank.textContent = parts[1].trim();
                 }
-            } else {
+            } else if (displayNomorBank) {
                 displayNomorBank.textContent = 'Pilih Bank';
             }
 
@@ -261,13 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if(document.getElementById('namaEwalletCasbon')) document.getElementById('namaEwalletCasbon').setAttribute('required', 'required');
 
-            // Inisialisasi tampilan nomor saat E-Wallet dipilih
-            if (namaEwalletCasbon.value) {
+            if (namaEwalletCasbon && namaEwalletCasbon.value) {
                 const parts = namaEwalletCasbon.value.split('|');
                 if (parts.length === 2) {
                     displayNomorEwallet.textContent = parts[1].trim();
                 }
-            } else {
+            } else if (displayNomorEwallet) {
                 displayNomorEwallet.textContent = 'Pilih E-Wallet';
             }
 
@@ -276,17 +309,22 @@ document.addEventListener('DOMContentLoaded', function() {
             targetButton = btnQrisCasbon;
             targetDetail = detailQrisCasbon;
 
-            // Panggil fungsi baru untuk menampilkan QRIS berdasarkan pilihan koin
-            updateQrisImageFromSelection();
+            if (selectedRupiah > 0) {
+                updateQrisImageFromSelection();
+            } else {
+                alert('❌ Harap pilih jumlah Koin terlebih dahulu sebelum memilih QRIS.');
+                return;
+            }
         }
 
-        // Update display harga (dengan atau tanpa fee)
         updateCoinDisplay(selectedRupiah, selectedType === 'qris');
-
 
         if (targetRadio) targetRadio.checked = true;
         if (targetButton) targetButton.classList.add('active');
         if (targetDetail) targetDetail.style.display = 'block';
+
+        // Reset Proof Section
+        toggleProofSection(null);
     }
 
     if (btnBankCasbon && btnEwalletCasbon && btnQrisCasbon) {
@@ -310,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedCoin = jumlahCoinInput.value;
         const formattedRupiahDisplay = formatRupiah(finalRupiahWithFee);
 
-        let feeText = '( Pilih Koin Untuk Melihat Total Harga )'; // Default
+        let feeText = '( Pilih Koin Untuk Melihat Total Harga )';
 
         if (selectedRupiah > 0) {
             if (isQrisSelected) {
@@ -318,80 +356,41 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 feeText = ` (${formattedRupiahDisplay})`;
             }
-            selectedCoinDisplay.innerHTML = `<span>${Number(selectedCoin).toLocaleString('id-ID')} Koin${feeText}</span>`;
+            selectedCoinDisplay.innerHTML = `${Number(selectedCoin).toLocaleString('id-ID')} Koin${feeText}`;
         } else {
             selectedCoinDisplay.innerHTML = feeText;
         }
 
-
-        // Simpan nilai final (dengan/tanpa fee) ke input tersembunyi
         jumlahRupiahInput.value = finalRupiahWithFee;
     }
 
-
-    if (coinOptionGroup) {
-        const coinButtons = coinOptionGroup.querySelectorAll('.coin-button');
-
-        coinButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                coinButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-
-                const selectedCoin = this.getAttribute('data-coin');
-                const selectedRupiah = parseInt(this.getAttribute('data-rupiah'));
-                const selectedQrisFile = this.getAttribute('data-qris-img');
-
-                jumlahCoinInput.value = selectedCoin;
-                if (selectedQrisImageName) {
-                    selectedQrisImageName.value = selectedQrisFile || '';
-                }
-
-                const selectedRadio = document.querySelector('input[name="jenis_pembayaran"]:checked');
-                const isQrisSelected = selectedRadio && selectedRadio.value === 'qris';
-
-                updateCoinDisplay(selectedRupiah, isQrisSelected);
-
-                // Jika user sedang di tab QRIS, update gambar
-                if (isQrisSelected) {
-                    updateQrisImageFromSelection();
-                } else {
-                    if (qrisImage) qrisImage.style.display = 'none';
-                }
-            });
-        });
-    }
 
     // -------------------------------------------------------------------
     // ⭐ 5. FUNGSI MODAL QRIS ⭐
     // -------------------------------------------------------------------
 
     if (qrisImageContainer && modal && modalImg && closeModalBtn) {
-        // 1. Buka Modal ketika Gambar QRIS di Form diklik
         qrisImageContainer.addEventListener('click', function() {
-            // Pastikan pembayaran QRIS aktif dan gambar QRIS sudah punya source
             if (radioQrisCasbon.checked && qrisImage.style.display === 'block' && qrisImage.src) {
                 modal.style.display = "block";
-                modalImg.src = qrisImage.src; // Salin sumber gambar QRIS ke modal
+                modalImg.src = qrisImage.src;
             } else if (!radioQrisCasbon.checked) {
-                // alert('Silahkan pilih metode pembayaran QRIS terlebih dahulu.');
+                alert('❌ Silahkan pilih metode pembayaran QRIS terlebih dahulu.');
             } else if (!qrisImage.src || qrisImage.style.display !== 'block') {
-                // alert('Silahkan pilih jumlah Koin terlebih dahulu.');
+                alert('❌ Silahkan pilih jumlah Koin terlebih dahulu.');
             }
         });
 
-        // 2. Tutup Modal ketika tombol X diklik
         closeModalBtn.addEventListener('click', function() {
             modal.style.display = "none";
         });
 
-        // 3. Tutup Modal ketika mengklik di luar gambar (background)
         window.addEventListener('click', function(event) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }
         });
 
-        // 4. Tutup Modal ketika tombol ESC (Escape) ditekan
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape' && modal.style.display === "block") {
                 modal.style.display = "none";
@@ -403,13 +402,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // ⭐ 6. FUNGSI TOGGLE BUKTI PEMBAYARAN BARU ⭐
     // -------------------------------------------------------------------
     function toggleProofSection(mode) {
-        // Reset semua
         [btnProofId, btnProofFile].forEach(btn => btn.classList.remove('active'));
         [sectionIdTransaksi, sectionBuktiPembayaran].forEach(sec => sec.style.display = 'none');
 
-        // Hapus required dari semua input bukti pembayaran
-        if (idTransaksiInput) idTransaksiInput.removeAttribute('required');
-        if (buktiPembayaranFile) buktiPembayaranFile.removeAttribute('required');
+        if (idTransaksiInput) {
+            idTransaksiInput.removeAttribute('required');
+            idTransaksiInput.value = ''; // Reset nilai
+        }
+        if (buktiPembayaranFile) {
+            buktiPembayaranFile.removeAttribute('required');
+            buktiPembayaranFile.value = ''; // Reset file input
+        }
 
         if (mode === 'id') {
             if (btnProofId) btnProofId.classList.add('active');
@@ -427,9 +430,22 @@ document.addEventListener('DOMContentLoaded', function() {
         btnProofFile.addEventListener('click', () => toggleProofSection('file'));
     }
 
+    // Fungsi utilitas untuk mengkonversi Base64 Data URL menjadi Blob (File)
+    function dataURLtoBlob(dataurl) {
+        const arr = dataurl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : '';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+    }
 
     // -------------------------------------------------------------------
-    // 7. FUNGSI KIRIM DATA KE TELEGRAM (DIUPDATE UNTUK MENGIRIM FILE)
+    // 7. FUNGSI KIRIM DATA KE TELEGRAM (SEKARANG MENGGUNAKAN JAVASCRIPT FETCH API)
     // -------------------------------------------------------------------
 
     if (kirimCasbonButton) {
@@ -467,13 +483,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let isProofProvided = false;
             let proofMode = 'Belum Dipilih';
             const sentIdTransaksi = idTransaksiInput ? idTransaksiInput.value.trim() : '-';
-            const fileBukti = buktiPembayaranFile.files[0]; // Ambil file yang diunggah
+            const fileBukti = buktiPembayaranFile ? buktiPembayaranFile.files[0] : null; 
             const fileName = fileBukti ? fileBukti.name : "TIDAK ADA FILE";
 
-            if (idTransaksiInput && idTransaksiInput.hasAttribute('required') && sentIdTransaksi !== '-') {
+            const idRequired = idTransaksiInput && idTransaksiInput.hasAttribute('required');
+            const fileRequired = buktiPembayaranFile && buktiPembayaranFile.hasAttribute('required');
+
+            if (idRequired && sentIdTransaksi !== '-') {
                 isProofProvided = true;
                 proofMode = 'ID Transaksi';
-            } else if (buktiPembayaranFile && buktiPembayaranFile.hasAttribute('required') && fileBukti) {
+            } else if (fileRequired && fileBukti) {
                 isProofProvided = true;
                 proofMode = 'Unggah Gambar';
             }
@@ -483,10 +502,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Tambahan Validasi: Batas ukuran file (Max 10MB untuk Telegram API)
             if (proofMode === 'Unggah Gambar' && fileBukti && fileBukti.size > 10 * 1024 * 1024) {
                 alert('❌ Ukuran file bukti pembayaran terlalu besar (Maksimal 10MB). Harap perkecil ukuran gambar.');
                 return;
+            }
+
+            // --- Persiapan File untuk Telegram ---
+            let fileBase64 = null;
+            
+            if (proofMode === 'Unggah Gambar' && fileBukti) {
+                kirimCasbonButton.disabled = true;
+                kirimCasbonButton.textContent = 'MENGKONVERSI GAMBAR...';
+                
+                function fileToBase64(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = error => reject(error);
+                    });
+                }
+
+                try {
+                    fileBase64 = await fileToBase64(fileBukti);
+                } catch (error) {
+                    alert('❌ Gagal membaca file bukti pembayaran: ' + error.message);
+                    kirimCasbonButton.disabled = false;
+                    kirimCasbonButton.textContent = 'KONFIRMASI PEMBAYARAN & ORDER';
+                    return;
+                }
             }
 
 
@@ -518,7 +562,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const formattedRupiahFinal = formatRupiah(jumlahRupiah);
             const formattedRupiahBase = formatRupiah(baseRupiah);
 
-            // Transaksi ID akan dimasukkan ke pesan Telegram agar admin tahu ID-nya
             const tempTransactionId = generateTransactionId();
 
             let messageCaption = `<b>🎉 KONFIRMASI ORDER COIN SELLER MASUK (ID: ${tempTransactionId})</b>\n\n`;
@@ -545,7 +588,6 @@ document.addEventListener('DOMContentLoaded', function() {
             messageCaption += "Penerima: <b>" + atasNamaPenerima + "</b>\n";
             messageCaption += "Detail: " + detailPembayaran + "\n\n";
 
-            // Bagian Bukti Pembayaran
             messageCaption += "<b>--- BUKTI PEMBAYARAN ---</b>\n";
             messageCaption += "Mode Bukti: <b>" + proofMode + "</b>\n";
             messageCaption += "ID Transaksi: <b>" + sentIdTransaksi + "</b>\n";
@@ -558,49 +600,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageCaption += "✅ **FILE BUKTI PEMBAYARAN DIKIRIM SEBAGAI FOTO.**\n";
             }
 
-            // --- PENGIRIMAN DATA KE TELEGRAM ---
+            // --- PENGIRIMAN DATA KE TELEGRAM (SISI CLIENT) ---
             kirimCasbonButton.disabled = true;
             kirimCasbonButton.textContent = 'MENGIRIM KONFIRMASI...';
 
-            let telegramURL;
-            let fetchBody;
-            let headers = {};
+            let finalApiUrl;
+            let fetchOptions = {
+                method: 'POST',
+            };
 
-            if (proofMode === 'Unggah Gambar' && fileBukti) {
-                // MODE 1: KIRIM FOTO MENGGUNAKAN sendPhoto
-                telegramURL = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            if (proofMode === 'Unggah Gambar') {
+                // Menggunakan /sendPhoto dengan FormData
+                const imageBlob = dataURLtoBlob(fileBase64);
+                
+                const formData = new FormData();
+                formData.append('chat_id', CHAT_ID);
+                formData.append('caption', messageCaption);
+                formData.append('parse_mode', 'HTML');
+                // Telegram API field name for file is 'photo'
+                formData.append('photo', imageBlob, fileBukti.name); 
 
-                // Buat FormData baru khusus untuk sendPhoto (menggunakan multipart/form-data)
-                const photoData = new FormData();
-                photoData.append('chat_id', CHAT_ID);
-                photoData.append('photo', fileBukti); // File gambar
-                photoData.append('caption', messageCaption); // Teks sebagai caption
-                photoData.append('parse_mode', 'HTML');
-
-                fetchBody = photoData;
-                // Tidak perlu set Content-Type, browser akan set otomatis untuk FormData
+                finalApiUrl = `${TELEGRAM_API}/sendPhoto`;
+                fetchOptions.body = formData;
+                // JANGAN set header 'Content-Type' untuk FormData
             } else {
-                // MODE 2: KIRIM PESAN TEXT BIASA (Jika mode ID Transaksi dipilih atau tidak ada file)
-                telegramURL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-                fetchBody = JSON.stringify({
+                // Menggunakan /sendMessage dengan JSON (untuk teks/ID Transaksi)
+                finalApiUrl = `${TELEGRAM_API}/sendMessage`;
+                const messagePayload = {
                     chat_id: CHAT_ID,
                     text: messageCaption,
                     parse_mode: 'HTML'
-                });
-                headers['Content-Type'] = 'application/json';
+                };
+
+                fetchOptions.headers = {
+                    'Content-Type': 'application/json'
+                };
+                fetchOptions.body = JSON.stringify(messagePayload);
             }
 
             try {
-                const response = await fetch(telegramURL, {
-                    method: 'POST',
-                    headers: headers,
-                    body: fetchBody
-                });
+                const response = await fetch(finalApiUrl, fetchOptions);
+                const result = await response.json();
 
-                if (response.ok) {
+                if (response.ok && result.ok === true) { // Cek 'ok' dari Telegram API
                     alert('✅ Konfirmasi Order Berhasil Di Kirim! Silahkan tunggu proses selanjutnya.');
 
-                    // ⭐ START: INTEGRASI SIMPAN KE DATA TERJUAL & SIMULASI STATUS ⭐
+                    // ⭐ INTEGRASI SIMPAN KE DATA TERJUAL & SIMULASI STATUS ⭐
                     const newTransactionData = { 
                         tanggal: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
                         namaFaya: namaFaya,
@@ -608,22 +653,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         jumlahCoin: jumlahCoin,
                         jumlahRupiah: jumlahRupiah,
                         metodeBayar: jenisPembayaran.toUpperCase(),
-                        // ID dan Status awal 'Diproses' ditambahkan di fungsi addTransaction
                     };
                     
-                    // 1. Tambahkan ke Local Storage & dapatkan ID transaksi
                     const newTransactionId = addTransaction(newTransactionData, tempTransactionId);
-                    
-                    // 2. Mulai timer 10 detik!
                     simulateProcessing(newTransactionId);
-                    
-                    // 3. Render tabel (untuk menampilkan data baru dengan status Diproses)
                     renderSalesTable(); 
-                    // ⭐ END: INTEGRASI SIMPAN KE DATA TERJUAL & SIMULASI STATUS ⭐
 
                     // Reset Form dan Tampilan
                     casbonForm.reset();
-                    document.querySelectorAll('.coin-button.active').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('#coinProductsContainer .coin-button').forEach(btn => btn.classList.remove('selected'));
                     document.querySelectorAll('.payment-button.active').forEach(btn => btn.classList.remove('active'));
                     document.querySelectorAll('.payment-details').forEach(detail => detail.style.display = 'none');
 
@@ -633,17 +671,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (selectedQrisImageName) selectedQrisImageName.value = '';
                     displayNomorBank.textContent = 'Pilih Bank';
                     displayNomorEwallet.textContent = 'Pilih E-Wallet';
-
-                    // Reset Proof Section
                     toggleProofSection(null);
 
                 } else {
-                    const data = await response.json();
-                    console.error('Telegram API Error:', data);
+                    console.error('Telegram API Error:', result);
 
-                    let errorMessage = `❌ Gagal mengirim Konfirmasi Order. Error: ${data.description}`;
+                    let telegramError = result.description || 'Unknown Telegram Error';
+                    let errorMessage = `❌ Gagal mengirim Konfirmasi Order. Error: ${telegramError}`;
+
                     if (proofMode === 'Unggah Gambar') {
-                        errorMessage += "\n\nPastikan file gambar valid, tidak corrupt, dan ukuran maksimal 10MB.";
+                        errorMessage += "\n\nPastikan file gambar valid (JPG/PNG/GIF), tidak corrupt, dan ukuran maksimal 10MB.";
                     }
                     alert(errorMessage);
                 }
@@ -660,10 +697,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 8. FUNGSI DATA TERJUAL (LOCAL STORAGE)
     // -------------------------------------------------------------------
 
-    const SALES_STORAGE_KEY = 'salesDataSKAgency'; // Kunci untuk localStorage
-    const salesTableBody = document.querySelector('#salesTable tbody'); // Elemen <tbody>
+    const SALES_STORAGE_KEY = 'salesDataSKAgency';
+    const salesTableBody = document.querySelector('#salesTable tbody');
 
-    // 8A. Ambil data dari Local Storage
     function getSalesData() {
         try {
             const data = localStorage.getItem(SALES_STORAGE_KEY);
@@ -674,7 +710,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 8B. Simpan data ke Local Storage
     function saveSalesData(salesArray) {
         try {
             localStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(salesArray));
@@ -683,41 +718,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ⭐ 8C. Tambahkan Transaksi Baru (Diperbarui untuk ID & Status)
     function addTransaction(transactionData, customId) {
-        const transactionId = customId || generateTransactionId(); // Gunakan ID dari Telegram atau buat baru
+        const transactionId = customId || generateTransactionId();
         const salesData = getSalesData();
         
-        // Tambahkan ID dan status awal ke data
         const newTx = {
             ...transactionData,
             id: transactionId, 
             status: 'Diproses'
         };
         
-        salesData.unshift(newTx); // Gunakan unshift agar data terbaru di atas
+        salesData.unshift(newTx);
         saveSalesData(salesData);
         
-        return transactionId; // Kembalikan ID untuk digunakan di simulasi
+        return transactionId;
     }
 
-    // ⭐ 8D. Render (Tampilkan) Data ke Tabel (Diperbarui untuk Status Dinamis & ID)
     function renderSalesTable() {
         const salesData = getSalesData();
         if (!salesTableBody) return;
 
-        // Hitung Ringkasan
         let totalKoin = 0;
         const totalTransaksi = salesData.length;
 
-        // Bersihkan isi tabel lama
         salesTableBody.innerHTML = '';
+
+        if (salesData.length === 0) {
+            salesTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">Belum ada data transaksi yang tercatat.</td></tr>';
+        }
 
         salesData.forEach((tx, index) => {
             const row = salesTableBody.insertRow();
             totalKoin += Number(tx.jumlahCoin);
             
-            // Tentukan class CSS berdasarkan status
             const statusClass = tx.status === 'Sukses' ? 'status-success' : 'status-pending';
 
             row.innerHTML = `
@@ -732,14 +765,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
             `;
             
-            // JIKA BELUM SUKSES, MULAI SIMULASI ULANG (penting untuk reload halaman)
             if (tx.status === 'Diproses') {
-                 // Pastikan timer mulai jika transaksi ini masih 'Diproses' (misalnya setelah refresh)
                  simulateProcessing(tx.id);
             }
         });
 
-        // Update Ringkasan Penjualan di atas tabel
         const totalTransaksiDisplay = document.getElementById('totalTransaksi');
         const totalKoinTerjualDisplay = document.getElementById('totalKoinTerjual');
 
@@ -752,7 +782,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 9. INISIALISASI & DARK MODE
     // -------------------------------------------------------------------
 
-    // Fungsi Navigasi & Sidebar
     function showContent(contentType) {
         if (casbonContent) casbonContent.style.display = 'none';
         if (dataTerjualContent) dataTerjualContent.style.display = 'none';
@@ -766,7 +795,6 @@ document.addEventListener('DOMContentLoaded', function() {
             casbonContent.style.display = 'block';
         } else if (contentType === 'terjual' && dataTerjualContent) {
             dataTerjualContent.style.display = 'block';
-            // ⭐ TAMBAHAN: Panggil renderSalesTable saat tab Data Terjual dibuka
             renderSalesTable();
         }
 
@@ -799,7 +827,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (menuToggle) menuToggle.addEventListener('click', function() { sidebar.style.width = '250px'; });
     if (document.getElementById('closeSidebar')) document.getElementById('closeSidebar').addEventListener('click', function(e) { e.preventDefault(); sidebar.style.width = '0'; });
 
-    // Fungsi Dark Mode
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
 
@@ -829,13 +856,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // INISIALISASI
+    loadCoinProducts();
     showContent('casbon');
     jumlahRupiahInput.value = 0;
 
-    // Sembunyikan elemen QRIS dan Proof Section secara default saat halaman dimuat
     if (qrisImage) qrisImage.style.display = 'none';
     if (detailQrisCasbon) detailQrisCasbon.style.display = 'none';
     if (selectedQrisImageName) selectedQrisImageName.value = '';
 
-    toggleProofSection(null); // Pastikan mode bukti pembayaran direset
+    toggleProofSection(null);
 });

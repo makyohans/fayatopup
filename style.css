@@ -692,7 +692,7 @@ body.dark-mode .close-modal-btn {
 .table-responsive {
     width: 100%;
     overflow-x: auto; /* Memastikan tabel responsif di layar kecil */
-    margin-top: 20px;
+    margin-top: 3px;
 }
 
 .data-table {
